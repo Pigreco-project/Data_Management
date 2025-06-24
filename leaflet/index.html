@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaflet</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+
+    <style>
+        #map {
+            width: 100%;
+            height: 100vh;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    
+</body>
+</html>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+
+<script src="line.js"></script>
+<script src="point.js"></script>
+<script src="poygon.js"></script>
+<script>
+
+
+//mapp inisialization
+    var map = L.map('map').setView([51.505, -0.09], 13);
+
+
+    var googleStreets = L.tileLayer('http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',{
+        maxZoom: 20,
+        subdomains:['mt0','mt1','mt2','mt3']
+    });
+    googleStreets.addTo(map)
+
+    
+
+    var googleHybrid = L.tileLayer('http://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}',{
+        maxZoom: 20,
+        subdomains:['mt0','mt1','mt2','mt3']
+    });
+    //googleHybrid.addTo(map)
+
+    var googleTerrain = L.tileLayer('http://{s}.google.com/vt/lyrs=p&x={x}&y={y}&z={z}',{
+        maxZoom: 20,
+        subdomains:['mt0','mt1','mt2','mt3']
+    });
+
+    //wms afga
+    var wms = L.tileLayer.wms("http://localhost:8083/geoserver/wms", {
+        layers: 'ne:eq_afghanistan 12',
+        format: 'image/png',
+        transparent: true,
+        attribution: "WMS test"
+
+        
+    });
+    //wms chile
+    var wms2 = L.tileLayer.wms("http://localhost:8083/geoserver/wms", {
+        layers: 'ne:eq_chile 12',
+        format: 'image/png',
+        transparent: true,
+        attribution: "WMS test"
+    })
+
+    //wms vanatau
+
+    var wms3= L.tileLayer.wms("http://localhost:8083/geoserver/wms", {
+        layers: 'ne:eq_vanuatu 12',
+        format: 'image/png',
+        transparent: true,
+        attribution: "WMS test"
+    })
+
+    // Fetch WFS data from GeoServer afga
+    var geojsonLayerAFGA = L.geoJSON(null, {
+        onEachFeature: function (feature, layer) {
+            layer.bindPopup("Earthquake Magnitude: " + feature.properties.magnitude);
+        }
+    }).addTo(map);
+
+// Load GeoJSON from GeoServer
+    fetch("http://localhost:8083/geoserver/ne/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=ne%3Aeq_afghanistan%2012&maxFeatures=50&outputFormat=application%2Fjson")
+
+    .then(response => response.json())
+    .then(data => {
+        geojsonLayerAFGA.addData(data);
+        console.log("GeoJSON Features Loaded: ", geojsonLayerAFGA.getLayers().length);
+    })
+    .catch(error => console.error("Error loading GeoJSON:", error));
+
+
+    // Fetch WFS data from GeoServer chile
+    var geojsonLayerCHILE = L.geoJSON(null, {
+        onEachFeature: function (feature, layer) {
+            layer.bindPopup("Earthquake: " + feature.properties.magnitude);
+        }
+    }).addTo(map);
+
+// Load GeoJSON from GeoServer
+    fetch("http://localhost:8083/geoserver/ne/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=ne%3Aeq_chile%2012&maxFeatures=50&outputFormat=application%2Fjson")
+
+    .then(response => response.json())
+    .then(data => {
+        geojsonLayerCHILE.addData(data);
+        console.log("GeoJSON Features Loaded: ", geojsonLayerCHILE.getLayers().length);
+    })
+    .catch(error => console.error("Error loading GeoJSON:", error));
+
+
+    // Fetch WFS data from GeoServer vanatau
+    var geojsonLayerVANUATU = L.geoJSON(null, {
+        onEachFeature: function (feature, layer) {
+            layer.bindPopup("Earthquake: " + feature.properties.magnitude);
+        }
+    }).addTo(map);
+
+// Load GeoJSON from GeoServer
+    fetch("http://localhost:8083/geoserver/ne/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=ne%3Aeq_vanuatu%2012&maxFeatures=50&outputFormat=application%2Fjson")
+
+    .then(response => response.json())
+    .then(data => {
+        geojsonLayerVANUATU.addData(data);
+        console.log("GeoJSON Features Loaded: ", geojsonLayerVANUATU.getLayers().length);
+    })
+    .catch(error => console.error("Error loading GeoJSON:", error));
+
+    
+
+
+    
+    // Marker
+
+    /*var marker=L.marker([38.193813, 15.554015], 13).addTo(map);
+    var popup=marker.bindPopup('This. ' + marker.getLatLng()).openPopup();
+    popup.addTo(map)
+
+    console.log(marker.toGeoJSON())
+
+    var Secondmarker=L.marker([37.507877, 15.083030], 13).addTo(map);*/
+
+
+    /*======================================
+                GEOJASON
+    =======================================*/
+
+    /*var pointData= L.geoJSON(pointJASON).addTo(map)
+    var lineJASON= L.geoJSON(lineJASON).addTo(map)
+    var polyganJASON= L.geoJSON(polyganJASON, {
+        onEachFeature: function(feature, layer){
+            layer.bindPopup(feature.properties.name)
+        },
+        style: {
+            fillColor:'red',
+            fillOpacity:1,
+            color: '#c0c0c0',
+           
+
+        }
+    }).addTo(map)
+    console.log("WMS Layer: ", wms);*/
+
+    /*======================================
+                Layer Controller
+    =======================================*/
+
+    var baseMaps={
+        "Google Street":googleStreets,
+        "Google Hybrid":googleHybrid,
+        "Google Terrain":googleTerrain,
+
+    };
+
+    var overlayMaps={
+   
+        "Chile Earthquake": wms2,
+        "Chile Earthquake WFS": geojsonLayerCHILE,
+        "Vanatau Earthquake": wms3,
+        "Vanatau Earthquake WFS": geojsonLayerVANUATU,
+        "Afga Earthquake": wms,
+        "Afga earthquake WFS":geojsonLayerAFGA
+       
+    };
+    //The layer control appears as a small icon/button in the corner of the map.
+    L.control.layers(baseMaps, overlayMaps, {collapsed: true}).addTo(map);
+
+    
+    
+
+</script>

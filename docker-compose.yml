@@ -1,0 +1,59 @@
+version: '3.1'
+
+services:
+  db:
+    image: postgis/postgis:17-3.5
+    container_name: postgis_container
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432" 
+    volumes:
+      - data:/var/lib/postgresql/data
+    networks:
+      - gisnet
+
+  pgadmin4:
+    image: dpage/pgadmin4
+    container_name: pgadmin_container
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: info@example.org
+      PGADMIN_DEFAULT_PASSWORD: password
+      PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION: "True"
+      PGADMIN_CONFIG_CONSOLE_LOG_LEVEL: "10"
+    ports:
+      - "5480:80"
+    networks:
+      - gisnet
+    depends_on:
+      - db
+
+  geoserver:
+    image: docker.osgeo.org/geoserver:2.26.2
+    container_name: geoserver
+    restart: always
+    ports:
+      - "8083:8080"
+    networks: 
+      - gisnet
+    depends_on:
+      - db
+    environment:
+      INSTALL_EXTENSIONS: "true"
+      STABLE_EXTENSIONS: "ysld,h2"
+    volumes:
+      - geoserver_data:/opt/geoserver/data_dir
+
+volumes:
+  data:
+    name: data-postgis17-data
+  geoserver_data:
+    name: data-geoserver
+
+networks:
+  gisnet:
+    driver: bridge
